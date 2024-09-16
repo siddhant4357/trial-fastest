@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fastest Finger First</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        #question {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        #options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        #timer {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 1rem;
+        }
+        #result {
+            font-size: 1.2rem;
+            color: #27ae60;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fastest Finger First</h1>
+        <div id="timer"></div>
+        <div id="question"></div>
+        <div id="options"></div>
+        <button id="startBtn">Start Game</button>
+        <button id="submitBtn" style="display: none;">Submit Answer</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const question = "Arrange the following numbers in correct sequence";
+        const correctOrder = ["1 ", "2", "3", "4", "5", "6"];
+        let shuffledOptions = [...correctOrder];
+        let startTime, endTime, timerInterval;
+        let selectedOptions = [];
+
+        const questionEl = document.getElementById('question');
+        const optionsEl = document.getElementById('options');
+        const startBtn = document.getElementById('startBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const timerEl = document.getElementById('timer');
+        const resultEl = document.getElementById('result');
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function createOptionButtons() {
+            optionsEl.innerHTML = '';
+            shuffledOptions.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.addEventListener('click', () => selectOption(index));
+                optionsEl.appendChild(button);
+            });
+        }
+
+        function selectOption(index) {
+            const buttons = optionsEl.getElementsByTagName('button');
+            if (buttons[index].style.backgroundColor === 'rgb(39, 174, 96)') {
+                buttons[index].style.backgroundColor = '';
+                selectedOptions = selectedOptions.filter(i => i !== index);
+            } else {
+                buttons[index].style.backgroundColor = '#27ae60';
+                selectedOptions.push(index);
+            }
+        }
+
+        function startGame() {
+            shuffleArray(shuffledOptions);
+            questionEl.textContent = question;
+            createOptionButtons();
+            startBtn.style.display = 'none';
+            submitBtn.style.display = 'inline-block';
+            resultEl.textContent = '';
+            selectedOptions = [];
+            startTime = new Date().getTime();
+            
+            let timeLeft = 15;
+            timerInterval = setInterval(() => {
+                timerEl.textContent = `Time left: ${timeLeft} seconds`;
+                timeLeft--;
+                if (timeLeft < 0) {
+                    clearInterval(timerInterval);
+                    submitAnswer();
+                }
+            }, 1000);
+        }
+
+        function submitAnswer() {
+            clearInterval(timerInterval);
+            endTime = new Date().getTime();
+            const timeTaken = (endTime - startTime) / 1000;
+            
+            const userAnswer = selectedOptions.map(index => shuffledOptions[index]);
+            const isCorrect = JSON.stringify(userAnswer) === JSON.stringify(correctOrder);
+            
+            resultEl.textContent = isCorrect ? 
+                `Correct! Time taken: ${timeTaken.toFixed(2)} seconds` : 
+                `Incorrect. Time taken: ${timeTaken.toFixed(2)} seconds`;
+            
+            submitBtn.style.display = 'none';
+            startBtn.style.display = 'inline-block';
+            startBtn.textContent = 'Play Again';
+            timerEl.textContent = 'Game Over';
+        }
+
+        startBtn.addEventListener('click', startGame);
+        submitBtn.addEventListener('click', submitAnswer);
+    </script>
+</body>
+</html>
